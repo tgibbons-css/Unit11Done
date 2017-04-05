@@ -56,25 +56,59 @@ public class MainActivity extends AppCompatActivity {
         XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
         XmlPullParser xmlPullParser = factory.newPullParser();
 
-        xmlPullParser.setInput( new StringReader( xmlWeatherString) );
-
+//        Comment out code for reading the xml file over the internet
+        URL weatherURL =  new URL("http://w1.weather.gov/xml/current_obs/KDLH.xml");
+        InputStream stream = weatherURL.openStream();
+        xmlPullParser.setInput(stream, null);                                 // use an XML file at this URL
+        //xmlPullParser.setInput( new StringReader( xmlWeatherString) );
         String xmlText="";
         int eventType = xmlPullParser.getEventType();
         while (eventType != XmlPullParser.END_DOCUMENT) {
-
-            // explore the tage and eventTypes here
-
+            // look for a start tag
+            switch (eventType) {
+                case XmlPullParser.START_DOCUMENT:
+                    Log.d("Gibbons", "Start of Document");
+                    break;
+                case XmlPullParser.START_TAG:
+                    Log.d("Gibbons", "Start of Tag:"+xmlPullParser.getName());
+                    break;
+                case XmlPullParser.TEXT:
+                    Log.d("Gibbons", "Text:"+xmlPullParser.getText());
+                    xmlText = xmlPullParser.getText();
+                    break;
+                case XmlPullParser.END_TAG:
+                    Log.d("Gibbons", "End of Tag:"+xmlPullParser.getName());
+                    String tag = xmlPullParser.getName();
+                    if (tag.equals("wind_mph")) {
+                        setWind(xmlText);    // Update the display
+                    }
+                    if (tag.equals("temperature_string")) {
+                        setTemp(xmlText);    // Update the display
+                    }
+                    if (tag.equals("visibility_mi")) {
+                        setVis(xmlText);    // Update the display
+                    }
+                    break;
+            }
             eventType = xmlPullParser.next();
         }
     }
 
     public void btnClick2 (View v) throws ParserConfigurationException, IOException, SAXException {
+
+        // Create the document builder
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(new InputSource(new StringReader(xmlWeatherString)));
+        //Set up the source to an XML file using a string
+        URL weatherURL =  new URL("http://w1.weather.gov/xml/current_obs/KDLH.xml");
+        InputStream stream = weatherURL.openStream();
+        InputSource source = new InputSource(stream);
+        Document doc = dBuilder.parse(source);
+        //Document doc = dBuilder.parse(new InputSource(new StringReader(xmlWeatherString)));
 
-        Log.d("Unit11", doc.getElementsByTagName("temperature_string").item(0).getTextContent());
-
+        setTemp( doc.getElementsByTagName("temperature_string").item(0).getTextContent());
+        setWind( doc.getElementsByTagName("wind_mph").item(0).getTextContent());
+        setVis( doc.getElementsByTagName("visibility_mi").item(0).getTextContent());
     }
 
     public void setTemp(String newTemp) {

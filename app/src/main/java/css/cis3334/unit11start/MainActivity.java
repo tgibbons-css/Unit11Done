@@ -14,9 +14,11 @@ import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -58,7 +60,9 @@ public class MainActivity extends AppCompatActivity {
 
 //        Comment out code for reading the xml file over the internet
         URL weatherURL =  new URL("http://w1.weather.gov/xml/current_obs/KDLH.xml");
-        InputStream stream = weatherURL.openStream();
+        HttpURLConnection urlConnection = (HttpURLConnection) weatherURL.openConnection();
+        InputStream stream = new BufferedInputStream(urlConnection.getInputStream());
+        //InputStream stream = weatherURL.openStream();
         xmlPullParser.setInput(stream, null);                                 // use an XML file at this URL
         //xmlPullParser.setInput( new StringReader( xmlWeatherString) );
         String xmlText="";
